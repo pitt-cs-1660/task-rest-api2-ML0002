@@ -27,9 +27,10 @@ Vagrant.configure("2") do |config|
     vb.cpus = 2
 
     # sync the world
-    override.vm.synced_folder ".", "/home/vagrant/app", owner: "vagrant", group: "vagrant"
+    override.vm.synced_folder "./cc_simple_server", "/home/vagrant/app/cc_simple_server", owner: "vagrant", group: "vagrant"
+    override.vm.synced_folder "./tests", "/home/vagrant/app/tests", owner: "vagrant", group: "vagrant"
   end
-
+  
   # network setup
   config.vm.network "forwarded_port", guest: 8000, host: 8000
 
@@ -47,6 +48,37 @@ Vagrant.configure("2") do |config|
       echo "vagrant ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
     else
       echo "User 'vagrant' not found, skipping sudo group addition"
+    fi
+
+    # create pyproject.toml if it doesn't exist
+    if [ ! -f /home/vagrant/app/pyproject.toml ]; then
+        echo "✨ Creating a new pyproject.toml file"
+        cat <<EOF > /home/vagrant/app/pyproject.toml
+[project]
+name = "cc-simple-server"
+version = "0.1.0"
+description = "Cloud Computing CS{16,20}60 Simple Server App"
+authors = [
+    {name = "dansc0de dpm79@pitt.edu"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi (>=0.115.6,<0.116.0)",
+    "uvicorn (>=0.34.0,<0.35.0)",
+    "pydantic (>=2.10.5,<3.0.0)",
+    "httpx (>=0.28.1,<0.29.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+pytest-cov = "^6.0.0"
+EOF
     fi
 
     # set ownership and permissions

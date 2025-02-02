@@ -3,7 +3,7 @@ name = "cc-simple-server"
 version = "0.1.0"
 description = "Cloud Computing CS{16,20}60 Simple Server App"
 authors = [
-    {name = "dansc0de dpm79@pitt.edu"}
+    {name = "dansc0de", email = "dpm79@pitt.edu"}
 ]
 readme = "README.md"
 requires-python = ">=3.11"
@@ -23,3 +23,7 @@ build-backend = "poetry.core.masonry.api"
 pytest = "^8.3.4"
 pytest-cov = "^6.0.0"
 
+[tool.pytest.ini_options]
+pythonpath = [
+  "."
+]

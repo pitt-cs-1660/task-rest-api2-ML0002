@@ -97,13 +97,13 @@ Your score will be based on the number of tests passed:
 ### **Run All Tests**
 To run all tests inside the Vagrant environment:
 ```bash
-pytest tests/ --maxfail=1 --disable-warnings
+poetry run pytest tests/ --maxfail=1 --disable-warnings
 ```
 
 ### **Run a Specific Test**
 To run a specific test, use:
 ```bash
-pytest -k "test_create_task"
+poetry run pytest -k "test_create_task"
 ```
 
 ---
