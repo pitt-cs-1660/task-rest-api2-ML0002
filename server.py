@@ -1,12 +1,13 @@
-from fastapi import FastAPI, HTTPException
-from cc_simple_server.models import TaskCreate, TaskRead
-from cc_simple_server.database import init_db, get_db_connection
-import sqlite3
+from fastapi import FastAPI
+from fastapi import HTTPException
+from fastapi import status
+from cc_simple_server.models import TaskCreate
+from cc_simple_server.models import TaskRead
+from cc_simple_server.database import init_db
+from cc_simple_server.database import get_db_connection
 
-# Initialize the database
 app = FastAPI()
 
-# Ensure the database is set up before requests are handled
 init_db()
 
 
@@ -25,14 +26,11 @@ async def create_task(task_data: TaskCreate):
         "INSERT INTO tasks (title, description, completed) VALUES (?, ?, ?)",
         (task_data.title, task_data.description, task_data.completed),
     )
-    task_id = cursor.lastrowid
     conn.commit()
+    id = cursor.lastrowid
     conn.close()
 
-    if not task_id:
-        raise HTTPException(status_code=500, detail="Task creation failed")
-
-    return TaskRead(id=task_id, **task_data.dict())
+    return TaskRead(id=id, title=task_data.title, description=task_data.description, completed=task_data.completed)
 
 
 @app.get("/tasks/", response_model=list[TaskRead])
