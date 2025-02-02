@@ -1,12 +1,13 @@
-from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi import FastAPI, HTTPException
 from cc_simple_server.models import TaskCreate, TaskRead
 from cc_simple_server.database import init_db, get_db_connection
 import sqlite3
 
 # Initialize the database
-init_db()
-
 app = FastAPI()
+
+# Ensure the database is set up before requests are handled
+init_db()
 
 
 @app.get("/")
@@ -19,7 +20,7 @@ async def create_task(task_data: TaskCreate):
     """Create a new task."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute(
         "INSERT INTO tasks (title, description, completed) VALUES (?, ?, ?)",
         (task_data.title, task_data.description, task_data.completed),
@@ -27,6 +28,9 @@ async def create_task(task_data: TaskCreate):
     task_id = cursor.lastrowid
     conn.commit()
     conn.close()
+
+    if not task_id:
+        raise HTTPException(status_code=500, detail="Task creation failed")
 
     return TaskRead(id=task_id, **task_data.dict())
 
@@ -36,12 +40,15 @@ async def get_tasks():
     """Retrieve all tasks."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT id, title, description, completed FROM tasks")
     tasks = cursor.fetchall()
     conn.close()
 
-    return [TaskRead(id=row[0], title=row[1], description=row[2], completed=row[3]) for row in tasks]
+    if not tasks:
+        return []
+
+    return [TaskRead(id=row[0], title=row[1], description=row[2], completed=bool(row[3])) for row in tasks]
 
 
 @app.put("/tasks/{task_id}/", response_model=TaskRead)
